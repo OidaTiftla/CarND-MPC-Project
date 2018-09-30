@@ -126,8 +126,8 @@ class FG_eval {
       auto cte1 = vars[cte_start + t + 1];
       auto epsi1 = vars[epsi_start + t + 1];
 
-      auto f0 = polyevalAD(coeffs, x0);
-      auto psi_dest0 = CppAD::atan(polyevalAD(coeffs, x0, 1));
+      auto f0 = polyevalAD(this->coeffs, x0);
+      auto psi_dest0 = CppAD::atan(polyevalAD(this->coeffs, x0, 1));
 
       // The idea here is to constraint this value to be 0.
       //
