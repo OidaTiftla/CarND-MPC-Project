@@ -8,7 +8,7 @@
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 #include "MPC.h"
-#include "poly.hpp"
+#include "poly.h"
 #include "coordinates.hpp"
 
 // for convenience
