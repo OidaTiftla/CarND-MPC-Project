@@ -32,11 +32,20 @@ string hasData(string s) {
   return "";
 }
 
+uint factorial(uint n) {
+  uint result = 1;
+  for (uint i = 1; i <= n; ++i) {
+    result *= i;
+  }
+  return result;
+}
+
 // Evaluate a polynomial.
-double polyeval(Eigen::VectorXd coeffs, double x) {
+// If derivative > 0 then the corresponding derivative is evaluated at point x.
+double polyeval(Eigen::VectorXd coeffs, double x, uint derivative = 0) {
   double result = 0.0;
-  for (int i = 0; i < coeffs.size(); i++) {
-    result += coeffs[i] * pow(x, i);
+  for (int i = derivative; i < coeffs.size(); i++) {
+    result += factorial(i) / factorial(i - derivative) * coeffs[i] * pow(x, i - derivative);
   }
   return result;
 }
