@@ -1,3 +1,4 @@
+#include <cppad/cppad.hpp>
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 
@@ -18,6 +19,16 @@ double polyeval(Eigen::VectorXd coeffs, double x, uint derivative = 0) {
   double result = 0.0;
   for (int i = derivative; i < coeffs.size(); i++) {
     result += factorial(i) / factorial(i - derivative) * coeffs[i] * pow(x, i - derivative);
+  }
+  return result;
+}
+
+// Evaluate a polynomial.
+// If derivative > 0 then the corresponding derivative is evaluated at point x.
+CppAD::AD<double> polyevalAD(Eigen::VectorXd coeffs, CppAD::AD<double> x, uint derivative = 0) {
+  CppAD::AD<double> result = 0.0;
+  for (int i = derivative; i < coeffs.size(); i++) {
+    result += factorial(i) / factorial(i - derivative) * coeffs[i] * CppAD::pow(x, i - derivative);
   }
   return result;
 }
