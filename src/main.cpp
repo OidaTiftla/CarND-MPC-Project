@@ -83,7 +83,7 @@ int main() {
           double epsi = psi_in_car_coordinates - atan(polyeval(coeffs, px_in_car_coordinates, 1));
 
           // solve using MPC
-          double latency = 0.100; // 100ms simulated/programmed latency in the simulator
+          double latency = 0.080; // 100ms simulated/programmed latency in the simulator
           static double delta = 0.0;
           static double a = 0.0;
           Eigen::VectorXd state(8);

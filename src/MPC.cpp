@@ -6,8 +6,8 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 25 + 1; // +1 for latency calculation
-double dt_global = 0.05;
+size_t N = 15 + 1; // +1 for latency calculation
+double dt_global = 0.10;
 double T = N * dt_global;
 
 // This value assumes the model presented in the classroom is used.
@@ -72,7 +72,7 @@ class FG_eval {
       fg[0] += CppAD::pow(epsi, 2);
 
       auto v = vars[v_start + t];
-      fg[0] += CppAD::pow(v - ref_v, 2);
+      fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
 
       // Minimize the use of actuators.
       if (t + 1 < N) {
@@ -80,18 +80,18 @@ class FG_eval {
         fg[0] += CppAD::pow(delta, 2);
 
         auto a = vars[a_start + t];
-        fg[0] += CppAD::pow(a, 2);
+        fg[0] += 0.02 * CppAD::pow(a, 2);
       }
 
       // Minimize the value gap between sequential actuations.
       if (t + 2 < N) {
         auto delta = vars[delta_start + t];
         auto delta_next = vars[delta_start + t + 1];
-        fg[0] += CppAD::pow(delta - delta_next, 2);
+        fg[0] += 200 * CppAD::pow(delta - delta_next, 2);
 
         auto a = vars[a_start + t];
         auto a_next = vars[a_start + t + 1];
-        fg[0] += CppAD::pow(a - a_next, 2);
+        fg[0] += 20 * CppAD::pow(a - a_next, 2);
       }
     }
 
