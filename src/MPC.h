@@ -9,6 +9,13 @@ using namespace std;
 
 class MPC {
  public:
+  std::vector<double> trajectory_x;
+  std::vector<double> trajectory_y;
+  std::vector<double> trajectory_psi;
+  std::vector<double> trajectory_v;
+  std::vector<double> trajectory_cte;
+  std::vector<double> trajectory_epsi;
+
   MPC();
 
   virtual ~MPC();
