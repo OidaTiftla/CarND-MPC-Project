@@ -1,6 +1,6 @@
 #include "poly.h"
 
-uint factorial(uint n) {
+uint factorial(const uint n) {
   uint result = 1;
   for (uint i = 1; i <= n; ++i) {
     result *= i;
@@ -8,7 +8,7 @@ uint factorial(uint n) {
   return result;
 }
 
-double polyeval(Eigen::VectorXd coeffs, double x, uint derivative /*= 0*/) {
+double polyeval(const Eigen::VectorXd &coeffs, double x, const uint derivative /*= 0*/) {
   double result = 0.0;
   for (uint i = derivative; i < coeffs.size(); i++) {
     result += factorial(i) / factorial(i - derivative) * coeffs[i] * pow(x, i - derivative);
@@ -16,7 +16,7 @@ double polyeval(Eigen::VectorXd coeffs, double x, uint derivative /*= 0*/) {
   return result;
 }
 
-CppAD::AD<double> polyevalAD(Eigen::VectorXd coeffs, CppAD::AD<double> x, uint derivative /*= 0*/) {
+CppAD::AD<double> polyevalAD(const Eigen::VectorXd &coeffs, const CppAD::AD<double> &x, const uint derivative /*= 0*/) {
   CppAD::AD<double> result = 0.0;
   for (uint i = derivative; i < coeffs.size(); i++) {
     result += factorial(i) / factorial(i - derivative) * coeffs[i] * CppAD::pow(x, i - derivative);
