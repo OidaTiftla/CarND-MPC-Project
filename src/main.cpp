@@ -73,13 +73,17 @@ int main() {
           // fit a polynomial to the waypoints
           auto coeffs = polyfit(way_in_car_coordinates_x, way_in_car_coordinates_y, 3);
 
+          double px_in_car_coordinates = 0;
+          double py_in_car_coordinates = 0;
+          double psi_in_car_coordinates = 0;
+
           // calculate the cross track error
-          double cte = polyeval(coeffs, px) - py;
+          double cte = polyeval(coeffs, px_in_car_coordinates) - py_in_car_coordinates;
           // calculate the orientation error
-          double epsi = psi - atan(polyeval(coeffs, px, 1));
+          double epsi = psi_in_car_coordinates - atan(polyeval(coeffs, px_in_car_coordinates, 1));
 
           Eigen::VectorXd state(6);
-          state << px, py, psi, v, cte, epsi;
+          state << px_in_car_coordinates, py_in_car_coordinates, psi_in_car_coordinates, v, cte, epsi;
 
           // solve using MPC
           auto vars = mpc.Solve(state, coeffs);
