@@ -211,10 +211,10 @@ vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &c
 
   // Set first actuators upper and lowerlimits
   // to the current values.
-  vars_lowerbound[delta_start] = delta;
-  vars_upperbound[delta_start] = delta;
-  vars_lowerbound[a_start] = a;
-  vars_upperbound[a_start] = a;
+  vars_lowerbound[delta_start] = max(-0.436332, delta - 0.001);
+  vars_upperbound[delta_start] = min(0.436332, delta + 0.001);
+  vars_lowerbound[a_start] = max(-1.0, a - 0.001);
+  vars_upperbound[a_start] = min(1.0, a + 0.001);
 
   // The upper and lower limits of delta are set to -25 and 25
   // degrees (values in radians).
