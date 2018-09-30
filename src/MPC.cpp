@@ -6,9 +6,9 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 25;
-double dt = 0.05;
-double T = N * dt;
+size_t N = 25 + 1; // +1 for latency calculation
+double dt_global = 0.05;
+double T = N * dt_global;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -41,7 +41,11 @@ class FG_eval {
  public:
   // Fitted polynomial coefficients
   Eigen::VectorXd coeffs;
-  FG_eval(const Eigen::VectorXd &coeffs) { this->coeffs = coeffs; }
+  double latency;
+  FG_eval(const Eigen::VectorXd &coeffs, const double latency) {
+    this->coeffs = coeffs;
+    this->latency = latency;
+  }
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
   void operator()(ADvector& fg, const ADvector& vars) {
@@ -110,6 +114,10 @@ class FG_eval {
 
     // The rest of the constraints
     for (int t = 0; t < N - 1; ++t) {
+      auto dt = dt_global;
+      if (t == 0) {
+        dt = this->latency;
+      }
       auto x0 = vars[x_start + t];
       auto y0 = vars[y_start + t];
       auto psi0 = vars[psi_start + t];
@@ -152,7 +160,7 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs) {
+vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs, const double latency) {
   bool ok = true;
   size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
@@ -237,7 +245,7 @@ vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &c
   constraints_upperbound[epsi_start] = epsi;
 
   // object that computes objective and constraints
-  FG_eval fg_eval(coeffs);
+  FG_eval fg_eval(coeffs, latency);
 
   //
   // NOTE: You don't have to worry about these options
@@ -297,8 +305,8 @@ vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &c
   //
   // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
   // creates a 2 element double vector.
-  return {solution.x[x_start + 1],   solution.x[y_start + 1],
-          solution.x[psi_start + 1], solution.x[v_start + 1],
-          solution.x[cte_start + 1], solution.x[epsi_start + 1],
-          solution.x[delta_start],   solution.x[a_start]};
+  return {solution.x[x_start + 1],     solution.x[y_start + 1],
+          solution.x[psi_start + 1],   solution.x[v_start + 1],
+          solution.x[cte_start + 1],   solution.x[epsi_start + 1],
+          solution.x[delta_start + 1], solution.x[a_start + 1]};
 }

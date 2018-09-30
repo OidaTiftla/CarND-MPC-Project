@@ -86,7 +86,8 @@ int main() {
           state << px_in_car_coordinates, py_in_car_coordinates, psi_in_car_coordinates, v, cte, epsi;
 
           // solve using MPC
-          auto vars = mpc.Solve(state, coeffs);
+          double latency = 0.100; // 100ms simulated/programmed latency in the simulator
+          auto vars = mpc.Solve(state, coeffs, latency);
 
           double delta = vars[6];
           double a = vars[7];
