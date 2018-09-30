@@ -94,12 +94,12 @@ int main() {
         string event = j[0].get<string>();
         if (event == "telemetry") {
           // j[1] is the data JSON object
-          vector<double> ptsx = j[1]["ptsx"];
-          vector<double> ptsy = j[1]["ptsy"];
-          double px = j[1]["x"];
-          double py = j[1]["y"];
-          double psi = j[1]["psi"];
-          double v = j[1]["speed"];
+          vector<double> ptsx = j[1]["ptsx"]; // The global x positions of the waypoints.
+          vector<double> ptsy = j[1]["ptsy"]; // The global y positions of the waypoints.
+          double px = j[1]["x"]; // The global x position of the vehicle.
+          double py = j[1]["y"]; // The global y position of the vehicle.
+          double psi = j[1]["psi"]; // The orientation of the vehicle in radians.
+          double v = j[1]["speed"]; // The current velocity in mph.
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -107,8 +107,8 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+          double steer_value; // The current steering angle in radians. But in negative direction.
+          double throttle_value; // The current throttle value.
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
