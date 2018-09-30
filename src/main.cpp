@@ -9,7 +9,7 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "MPC.h"
 #include "poly.h"
-#include "coordinates.hpp"
+#include "coordinates.h"
 
 // for convenience
 using json = nlohmann::json;
