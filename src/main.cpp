@@ -74,6 +74,14 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
   return result;
 }
 
+// convert map coordinates (map_x, map_y) into car coordinates (car_x, car_y)
+// where the car is at (car_in_map_x, car_in_map_y) in the map
+// and is oriented in an angle of car_in_map_psi to the x-axis of the map.
+void map2carCoordinates(double car_in_map_x, double car_in_map_y, double car_in_map_psi, double map_x, double map_y, double &car_x, double &car_y) {
+  car_x = cos(car_in_map_psi) * (map_x - car_in_map_x) + sin(car_in_map_psi) * (map_y - car_in_map_y);
+  car_y = -sin(car_in_map_psi) * (map_x - car_in_map_x) + cos(car_in_map_psi) * (map_y - car_in_map_y);
+}
+
 int main() {
   uWS::Hub h;
 
@@ -100,6 +108,29 @@ int main() {
           double py = j[1]["y"]; // The global y position of the vehicle.
           double psi = j[1]["psi"]; // The orientation of the vehicle in radians.
           double v = j[1]["speed"]; // The current velocity in mph.
+
+          Eigen::VectorXd way_in_car_coordinates_x(ptsx.size());
+          Eigen::VectorXd way_in_car_coordinates_y(ptsx.size());
+          for (int i = 0; i < ptsx.size(); ++i) {
+            double car_x, car_y;
+            map2carCoordinates(px, py, psi, ptsx[i], ptsy[i], car_x, car_y);
+            way_in_car_coordinates_x[i] = car_x;
+            way_in_car_coordinates_y[i] = car_y;
+          }
+
+          // fit a polynomial to the waypoints
+          auto coeffs = polyfit(way_in_car_coordinates_x, way_in_car_coordinates_y, 3);
+
+          // calculate the cross track error
+          double cte = polyeval(coeffs, px) - py;
+          // calculate the orientation error
+          double epsi = psi - atan(polyeval(coeffs, px, 1));
+
+          Eigen::VectorXd state(6);
+          state << px, py, psi, v, cte, epsi;
+
+          // solve using MPC
+          auto vars = mpc.Solve(state, coeffs);
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -132,6 +163,11 @@ int main() {
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
+
+          for (int i = 0; i < way_in_car_coordinates_y.size(); ++i) {
+            next_x_vals.push_back(way_in_car_coordinates_x[i]);
+            next_y_vals.push_back(way_in_car_coordinates_y[i]);
+          }
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
