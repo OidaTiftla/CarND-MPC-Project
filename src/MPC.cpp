@@ -64,34 +64,37 @@ class FG_eval {
     // any anything you think may be beneficial.
 
     for (int t = 0; t < N; ++t) {
-      // The part of the cost based on the reference state.
-      auto cte = vars[cte_start + t];
-      fg[0] += CppAD::pow(cte, 2);
-
-      auto epsi = vars[epsi_start + t];
-      fg[0] += CppAD::pow(epsi, 2);
-
-      auto v = vars[v_start + t];
-      fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
-
-      // Minimize the use of actuators.
-      if (t + 1 < N) {
-        auto delta = vars[delta_start + t];
-        fg[0] += CppAD::pow(delta, 2);
-
-        auto a = vars[a_start + t];
-        fg[0] += 0.2 * CppAD::pow(a, 2);
+      auto dt = dt_global;
+      if (t == 0) {
+        dt = this->latency;
       }
 
-      // Minimize the value gap between sequential actuations.
-      if (t + 2 < N) {
-        auto delta = vars[delta_start + t];
-        auto delta_next = vars[delta_start + t + 1];
-        fg[0] += 200 * CppAD::pow(delta - delta_next, 2);
+      auto v = vars[v_start + t];
+      auto cte = vars[cte_start + t];
+      auto epsi = vars[epsi_start + t];
 
+      // The part of the cost based on the reference state.
+      fg[0] += CppAD::pow(cte, 2);
+      fg[0] += CppAD::pow(epsi, 2);
+
+      fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
+
+      if (t + 1 < N) {
+        auto delta = vars[delta_start + t];
         auto a = vars[a_start + t];
-        auto a_next = vars[a_start + t + 1];
-        fg[0] += 100 * CppAD::pow(a - a_next, 2);
+
+        // Minimize the use of actuators.
+        fg[0] += CppAD::pow(delta, 2);
+        fg[0] += 0.2 * CppAD::pow(a, 2);
+
+        if (t + 2 < N) {
+          auto delta_next = vars[delta_start + t + 1];
+          auto a_next = vars[a_start + t + 1];
+
+          // Minimize the value gap between sequential actuations.
+          fg[0] += 200 * CppAD::pow(delta - delta_next, 2);
+          fg[0] += 100 * CppAD::pow(a - a_next, 2);
+        }
       }
     }
 
