@@ -82,15 +82,15 @@ int main() {
           // calculate the orientation error
           double epsi = psi_in_car_coordinates - atan(polyeval(coeffs, px_in_car_coordinates, 1));
 
-          Eigen::VectorXd state(6);
-          state << px_in_car_coordinates, py_in_car_coordinates, psi_in_car_coordinates, v, cte, epsi;
-
           // solve using MPC
           double latency = 0.100; // 100ms simulated/programmed latency in the simulator
+          static double delta = 0.0;
+          static double a = 0.0;
+          Eigen::VectorXd state(8);
+          state << px_in_car_coordinates, py_in_car_coordinates, psi_in_car_coordinates, v, cte, epsi, delta, a;
           auto vars = mpc.Solve(state, coeffs, latency);
-
-          double delta = vars[6];
-          double a = vars[7];
+          delta = vars[6];
+          a = vars[7];
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.

@@ -171,6 +171,8 @@ vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &c
   double v = state[3];
   double cte = state[4];
   double epsi = state[5];
+  double delta = state[6];
+  double a = state[7];
 
   // TODO: Set the number of model variables (includes both states and inputs).
   // For example: If the state is a 4 element vector, the actuators is a 2
@@ -207,17 +209,24 @@ vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &c
     vars_upperbound[i] = 1.0e19;
   }
 
+  // Set first actuators upper and lowerlimits
+  // to the current values.
+  vars_lowerbound[delta_start] = delta;
+  vars_upperbound[delta_start] = delta;
+  vars_lowerbound[a_start] = a;
+  vars_upperbound[a_start] = a;
+
   // The upper and lower limits of delta are set to -25 and 25
   // degrees (values in radians).
   // NOTE: Feel free to change this to something else.
-  for (int i = delta_start; i < a_start; i++) {
+  for (int i = delta_start + 1; i < a_start; i++) {
     vars_lowerbound[i] = -0.436332;
     vars_upperbound[i] = 0.436332;
   }
 
   // Acceleration/decceleration upper and lower limits.
   // NOTE: Feel free to change this to something else.
-  for (int i = a_start; i < n_vars; i++) {
+  for (int i = a_start + 1; i < n_vars; i++) {
     vars_lowerbound[i] = -1.0;
     vars_upperbound[i] = 1.0;
   }
