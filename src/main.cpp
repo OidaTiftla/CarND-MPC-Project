@@ -98,8 +98,8 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value = -delta; // The current steering angle in radians. But in negative direction.
-          double throttle_value = a; // The current throttle value.
+          double steer_value = max(-1.0, min(1.0, -delta * 1.67)); // The current steering angle in radians. But in negative direction.
+          double throttle_value = max(-1.0, min(1.0, a * 0.65)); // The current throttle value.
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
