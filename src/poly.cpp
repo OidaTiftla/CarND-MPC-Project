@@ -11,7 +11,11 @@ uint factorial(const uint n) {
 double polyeval(const Eigen::VectorXd &coeffs, double x, const uint derivative /*= 0*/) {
   double result = 0.0;
   for (uint i = derivative; i < coeffs.size(); i++) {
-    result += factorial(i) / factorial(i - derivative) * coeffs[i] * pow(x, i - derivative);
+    double factor = 1.0;
+    if (derivative > 0) {
+      factor = factorial(i) / factorial(i - derivative);
+    }
+    result += factor * coeffs[i] * pow(x, i - derivative);
   }
   return result;
 }
@@ -19,7 +23,11 @@ double polyeval(const Eigen::VectorXd &coeffs, double x, const uint derivative /
 CppAD::AD<double> polyevalAD(const Eigen::VectorXd &coeffs, const CppAD::AD<double> &x, const uint derivative /*= 0*/) {
   CppAD::AD<double> result = 0.0;
   for (uint i = derivative; i < coeffs.size(); i++) {
-    result += factorial(i) / factorial(i - derivative) * coeffs[i] * CppAD::pow(x, i - derivative);
+    double factor = 1.0;
+    if (derivative > 0) {
+      factor = factorial(i) / factorial(i - derivative);
+    }
+    result += factor * coeffs[i] * CppAD::pow(x, i - derivative);
   }
   return result;
 }
