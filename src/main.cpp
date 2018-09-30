@@ -84,14 +84,17 @@ int main() {
           // solve using MPC
           auto vars = mpc.Solve(state, coeffs);
 
+          double delta = vars[6];
+          double a = vars[7];
+
           /*
           * TODO: Calculate steering angle and throttle using MPC.
           *
           * Both are in between [-1, 1].
           *
           */
-          double steer_value; // The current steering angle in radians. But in negative direction.
-          double throttle_value; // The current throttle value.
+          double steer_value = -delta; // The current steering angle in radians. But in negative direction.
+          double throttle_value = a; // The current throttle value.
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
