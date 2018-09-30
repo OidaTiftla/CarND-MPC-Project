@@ -270,6 +270,11 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
   // Cost
   auto cost = solution.obj_value;
+  if (!ok) {
+    std::cout << "\033[0;31m"; // switch to red text
+    std::cout << "Error could not solve MPC problem!" << std::endl;
+    std::cout << "\033[0m"; // reset colors
+  }
   std::cout << "Cost " << cost << std::endl;
 
   trajectory_x.clear();
