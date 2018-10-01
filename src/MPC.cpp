@@ -76,30 +76,30 @@ class FG_eval {
       auto epsi = vars[epsi_start + t];
 
       // The part of the cost based on the reference state.
-      fg[0] += 4 * CppAD::pow(cte, 2);
+      fg[0] += CppAD::pow(cte, 2);
       fg[0] += CppAD::pow(epsi, 2);
-      fg[0] += 0.002 * CppAD::pow(v - ref_v, 2);
+      fg[0] += CppAD::pow(v - ref_v, 2);
 
       if (t + 1 < N) {
         auto delta = vars[delta_start + t];
         auto a = vars[a_start + t];
 
         // Minimize the use of actuators.
-        // fg[0] += CppAD::pow(delta, 2);
-        // fg[0] += 0.2 * CppAD::pow(a, 2);
+        fg[0] += CppAD::pow(delta, 2);
+        fg[0] += CppAD::pow(a, 2);
 
         if (t + 2 < N) {
           auto delta_next = vars[delta_start + t + 1];
           auto a_next = vars[a_start + t + 1];
 
-          // Minimize the velocity in the curve.
-          auto r = Lf / (CppAD::abs(delta_next) + 0.0001);
-          auto v_max = CppAD::sqrt(this->alpha * r);
-          fg[0] += 0.3 * CppAD::exp(v - v_max);
+          // // Minimize the velocity in the curve.
+          // auto r = Lf / (CppAD::abs(delta_next) + 0.0001);
+          // auto v_max = CppAD::sqrt(this->alpha * r);
+          // fg[0] += 0.3 * CppAD::exp(v - v_max);
 
           // Minimize the value gap between sequential actuations.
-          fg[0] += 100 * CppAD::pow(delta - delta_next, 2);
-          fg[0] += CppAD::pow(a - a_next, 2);
+          fg[0] += 200 * CppAD::pow(delta - delta_next, 2);
+          fg[0] += 100 * CppAD::pow(a - a_next, 2);
         }
       }
     }
