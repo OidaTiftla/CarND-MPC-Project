@@ -127,9 +127,13 @@ int main() {
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
 
-          for (int i = 0; i < way_in_car_coordinates_y.size(); ++i) {
-            next_x_vals.push_back(way_in_car_coordinates_x[i]);
-            next_y_vals.push_back(way_in_car_coordinates_y[i]);
+          // for (int i = 0; i < way_in_car_coordinates_y.size(); ++i) {
+          //   next_x_vals.push_back(way_in_car_coordinates_x[i]);
+          //   next_y_vals.push_back(way_in_car_coordinates_y[i]);
+          // }
+          for (double x = -15; x < 100; x += 5) {
+            next_x_vals.push_back(x);
+            next_y_vals.push_back(polyeval(coeffs, x));
           }
 
           msgJson["next_x"] = next_x_vals;
