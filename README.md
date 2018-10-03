@@ -106,3 +106,52 @@ still be compilable with cmake and make./
 
 ## How to write a README
 A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+
+## Implementation description
+
+There are two helper files `poly.cpp` and `coordinates.cpp`.
+`poly.cpp` does the fitting of a polynomial to given points and also evaluating a given polynomial for a given x coordinate and also for any derivatives.
+There is also a evaluation method that can be used in the CppAD context.
+
+`coordinates.cpp` contains the transformation formulas to get from map to car coordinate system and vice versa.
+
+Next we look at `main.cpp`.
+If a telemetry message from the simulator is received, first all waypoints are transformed into the cars coordinate system.
+Next a polynomial is fitted to the given waypoints.
+This curve is used to calculate the current cross track error as well as the error in the orientation.
+
+I tried to let the MPC solve the velocity problem and getting a optimal path.
+But if I restricted the velocity in the curve, the solver thought it should better only go straight, instead of driving slow in tight curves.
+Because this did not work, I chose to implement it in front of the solver.
+This is the next part in the `main.cpp` file.
+The polynomial is evaluated step by step and searched for the maximum curvature.
+Based on the maximum curvature the minimum radius of the current track can be calculated.
+If you set a maximum lateral acceleration, you can not also calculate the maximum velocity that can be driven in this radius.
+Because my MPC is not perfect yet, I introduced a driver experience factor, to reduce the velocity the solver should try to reach.
+
+Afterwards the solver is called with the calculated reference velocity and the last `delta` and `a` actuator values.
+
+When the solver is ready, the next actuator values are written to the simulator (besides the waypoints and MPC trajectory).
+
+By looking at the `MPC.cpp`, `N` is set to 11, `dt` to 0.05sec.
+This results in a time horizon of `T` of 0.55sec.
+A higher value of `N` does not make the resulting trajectory better, but makes the solver slower and take longer to solve the problem.
+If `dt` is to large, the solution is also not better, but more incorrect because of the large steps in time.
+
+The state for the solver contains `x, y, psi, v, cte, epsi`.
+The actuators are `delta, a` for steering and longitudinal acceleration.
+
+The cost function contains the cross track error, the error in orientation, the difference between the current velocity and the reference velocity.
+Also the use of actuators count in the cost function.
+The cornering velocity was tried to include into the cost function, so the solver can find an optimal trajectory, but this did not work, so now the velocity is calculated in the `main.cpp`.
+Next the change in steering actuation is added to the cost function.
+The change in longitudinal acceleration is not added, because the solver should only brake as short as possible.
+At last a point far away on the polynomial is used as destination and the distance of the last point of the trajectory to that destination is also added to the cost function.
+
+Next the constraints are set, based on the vehicle model and motion model.
+For this a bicycle model is used.
+
+One thing to mention is, how the latency is compensated.
+The first timestep is as long as the latency of the system.
+Within this timestep, the solver cannot change the steering and acceleration actuations, because they are set by the previous calculation cycle and cannot be changed at the current calculation cycle.
+This is done with upper and lower bounds on the variables.
