@@ -70,11 +70,6 @@ class FG_eval {
     // any anything you think may be beneficial.
 
     for (int t = 0; t < N; ++t) {
-      auto dt = dt_global;
-      if (t == 0) {
-        dt = this->latency;
-      }
-
       auto v = vars[v_start + t];
       auto cte = vars[cte_start + t];
       auto epsi = vars[epsi_start + t];
