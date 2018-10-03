@@ -7,7 +7,7 @@ using CppAD::AD;
 
 // TODO: Set the timestep length and duration
 size_t N = 10 + 1; // +1 for latency calculation
-double dt_global = 0.10;
+double dt_global = 0.15;
 double T = N * dt_global;
 
 // This value assumes the model presented in the classroom is used.
@@ -24,6 +24,8 @@ const double Lf = 2.67;
 
 // The reference velocity the solver should try to reach
 double ref_v = 60;
+// The maximum velocity the solver should calculate the destination point
+double max_v = ref_v * 2;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -76,33 +78,45 @@ class FG_eval {
       auto epsi = vars[epsi_start + t];
 
       // The part of the cost based on the reference state.
-      fg[0] += CppAD::pow(cte, 2);
+      fg[0] += 0.002 * (CppAD::exp(CppAD::abs(cte) * 2 - 0.5) + CppAD::pow(cte, 2));
       fg[0] += CppAD::pow(epsi, 2);
-      fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
+      // fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
 
       if (t + 1 < N) {
         auto delta = vars[delta_start + t];
         auto a = vars[a_start + t];
 
         // Minimize the use of actuators.
-        fg[0] += CppAD::pow(delta, 2);
-        fg[0] += CppAD::pow(a, 2);
+        // fg[0] += CppAD::pow(delta, 2);
+        // fg[0] += CppAD::pow(a, 2);
 
         if (t + 2 < N) {
           auto delta_next = vars[delta_start + t + 1];
           auto a_next = vars[a_start + t + 1];
 
-          // // Minimize the velocity in the curve.
-          // auto r = Lf / (CppAD::abs(delta_next) + 0.0001);
-          // auto v_max = CppAD::sqrt(this->alpha * r);
-          // fg[0] += 0.3 * CppAD::exp(v - v_max);
+          // Minimize the velocity in the curve.
+          auto r = Lf / (CppAD::abs(delta_next) + 0.000001);
+          auto v_max = CppAD::sqrt(this->alpha * r);
+          fg[0] += 0.003 * CppAD::exp(v - v_max);
 
           // Minimize the value gap between sequential actuations.
           fg[0] += 200 * CppAD::pow(delta - delta_next, 2);
-          fg[0] += 100 * CppAD::pow(a - a_next, 2);
+          // fg[0] += 70 * CppAD::pow(a - a_next, 2);
         }
       }
     }
+    // normalize the errors
+    fg[0] /= N;
+
+    // The solver should try to reach a point far away from the current position
+    auto x_dest = max_v * ((N - 1) * dt_global + this->latency);
+    auto y_dest = polyeval(this->coeffs, x_dest);
+    auto x_end = vars[x_start + N - 1];
+    auto y_end = vars[y_start + N - 1];
+    auto distance_to_dest = CppAD::sqrt(CppAD::pow(x_end - x_dest, 2) + CppAD::pow(y_end - y_dest, 2));
+    fg[0] += 2 * distance_to_dest;
+    // auto distance_to_dest_squared = CppAD::pow(x_end - x_dest, 2) + CppAD::pow(y_end - y_dest, 2);
+    // fg[0] += distance_to_dest_squared;
 
     //
     // Setup Constraints

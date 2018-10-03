@@ -84,7 +84,7 @@ int main() {
 
           // solve using MPC
           double latency = 0.100; // 100ms simulated/programmed latency in the simulator
-          double alpha = 75;
+          double alpha = 45;
           static double delta = 0.0;
           static double a = 0.0;
           Eigen::VectorXd state(8);
