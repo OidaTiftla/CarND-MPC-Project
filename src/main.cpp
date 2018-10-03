@@ -82,15 +82,31 @@ int main() {
           // calculate the orientation error
           double epsi = psi_in_car_coordinates - atan(polyeval(coeffs, px_in_car_coordinates, 1));
 
+          // calculate reference velocity for next waypoints
+          double max_curvature = 0;
+          for (double x = 3; x < 40; x += 2) {
+            // get curvature from 2nd derivative
+            auto curvature = std::fabs(polyeval(coeffs, x, 2));
+            if (curvature > max_curvature) {
+              max_curvature = curvature;
+            }
+          }
+          auto min_radius = 1 / std::fabs(max_curvature);
+          // calculate maximal velocity in the curve
+          double max_lateral_acc = 300;
+          auto v_max = std::sqrt(max_lateral_acc * min_radius);
+          // reference velocity is v_max up to 120
+          double driver_experience_factor = 0.7;
+          auto v_ref = std::min(120.0, v_max * driver_experience_factor);
+          std::cout << "v ref = " << v_ref << ", min radius = " << min_radius << std::endl;
+
           // solve using MPC
           double latency = 0.100; // 100ms simulated/programmed latency in the simulator
-          double alpha = 45;
-          double v_ref = 60;
           static double delta = 0.0;
           static double a = 0.0;
           Eigen::VectorXd state(8);
           state << px_in_car_coordinates, py_in_car_coordinates, psi_in_car_coordinates, v, cte, epsi, delta, a;
-          auto vars = mpc.Solve(state, coeffs, latency, alpha, v_ref);
+          auto vars = mpc.Solve(state, coeffs, latency, max_lateral_acc, v_ref);
           delta = vars[6];
           a = vars[7];
 
@@ -101,7 +117,7 @@ int main() {
           *
           */
           double steer_value = max(-1.0, min(1.0, -delta * 1.67)); // The current steering angle in radians. But in negative direction.
-          double throttle_value = max(-1.0, min(1.0, a * 0.65)); // The current throttle value.
+          double throttle_value = a; // The current throttle value.
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -132,7 +148,7 @@ int main() {
           //   next_x_vals.push_back(way_in_car_coordinates_x[i]);
           //   next_y_vals.push_back(way_in_car_coordinates_y[i]);
           // }
-          for (double x = -15; x < 100; x += 5) {
+          for (double x = 3; x < 40; x += 2) {
             next_x_vals.push_back(x);
             next_y_vals.push_back(polyeval(coeffs, x));
           }

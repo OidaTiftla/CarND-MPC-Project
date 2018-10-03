@@ -77,15 +77,15 @@ class FG_eval {
       // The part of the cost based on the reference state.
       fg[0] += CppAD::pow(cte, 2);
       fg[0] += CppAD::pow(epsi, 2);
-      fg[0] += 0.2 * CppAD::pow(v - this->v_ref, 2);
+      fg[0] += 0.5 * CppAD::pow(v - this->v_ref, 2);
 
       if (t + 1 < N) {
         auto delta = vars[delta_start + t];
         auto a = vars[a_start + t];
 
         // Minimize the use of actuators.
-        // fg[0] += CppAD::pow(delta, 2);
-        // fg[0] += CppAD::pow(a, 2);
+        fg[0] += CppAD::pow(delta, 2);
+        fg[0] += CppAD::pow(a, 2);
 
         if (t + 2 < N) {
           auto delta_next = vars[delta_start + t + 1];
@@ -97,7 +97,7 @@ class FG_eval {
           // fg[0] += 0.003 * CppAD::exp(v - v_max);
 
           // Minimize the value gap between sequential actuations.
-          fg[0] += 200 * CppAD::pow(delta - delta_next, 2);
+          fg[0] += 400 * CppAD::pow(delta - delta_next, 2);
           // fg[0] += 70 * CppAD::pow(a - a_next, 2);
         }
       }
