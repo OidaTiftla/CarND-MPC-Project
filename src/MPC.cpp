@@ -77,7 +77,7 @@ class FG_eval {
       // The part of the cost based on the reference state.
       fg[0] += CppAD::pow(cte, 2);
       fg[0] += CppAD::pow(epsi, 2);
-      fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
+      fg[0] += 0.2 * CppAD::pow(v - this->v_ref, 2);
 
       if (t + 1 < N) {
         auto delta = vars[delta_start + t];
