@@ -44,12 +44,12 @@ class FG_eval {
   // Fitted polynomial coefficients
   Eigen::VectorXd coeffs;
   double latency;
-  double alpha;
+  double max_lateral_acc;
   double v_ref;
-  FG_eval(const Eigen::VectorXd &coeffs, const double latency, const double alpha, const double v_ref) {
+  FG_eval(const Eigen::VectorXd &coeffs, const double latency, const double max_lateral_acc, const double v_ref) {
     this->coeffs = coeffs;
     this->latency = latency;
-    this->alpha = alpha;
+    this->max_lateral_acc = max_lateral_acc;
     this->v_ref = v_ref;
   }
 
@@ -93,7 +93,7 @@ class FG_eval {
 
           // // Minimize the velocity in the curve.
           // auto r = Lf / (CppAD::abs(delta_next) + 0.000001);
-          // auto v_max = CppAD::sqrt(this->alpha * r);
+          // auto v_max = CppAD::sqrt(this->max_lateral_acc * r);
           // fg[0] += 0.003 * CppAD::exp(v - v_max);
 
           // Minimize the value gap between sequential actuations.
@@ -180,7 +180,7 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs, const double latency, const double alpha, const double v_ref) {
+vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs, const double latency, const double max_lateral_acc, const double v_ref) {
   bool ok = true;
   size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
@@ -274,7 +274,7 @@ vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &c
   constraints_upperbound[epsi_start] = epsi;
 
   // object that computes objective and constraints
-  FG_eval fg_eval(coeffs, latency, alpha, v_ref);
+  FG_eval fg_eval(coeffs, latency, max_lateral_acc, v_ref);
 
   //
   // NOTE: You don't have to worry about these options
