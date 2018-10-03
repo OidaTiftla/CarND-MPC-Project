@@ -22,7 +22,7 @@ class MPC {
 
   // Solve the model given an initial state and polynomial coefficients.
   // Return the first actuations.
-  vector<double> Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs, const double latency, const double alpha);
+  vector<double> Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs, const double latency, const double alpha, const double v_ref);
 };
 
 #endif /* MPC_H */

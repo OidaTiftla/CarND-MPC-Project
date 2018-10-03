@@ -7,7 +7,7 @@ using CppAD::AD;
 
 // TODO: Set the timestep length and duration
 size_t N = 10 + 1; // +1 for latency calculation
-double dt_global = 0.15;
+double dt_global = 0.05;
 double T = N * dt_global;
 
 // This value assumes the model presented in the classroom is used.
@@ -45,10 +45,12 @@ class FG_eval {
   Eigen::VectorXd coeffs;
   double latency;
   double alpha;
-  FG_eval(const Eigen::VectorXd &coeffs, const double latency, const double alpha) {
+  double v_ref;
+  FG_eval(const Eigen::VectorXd &coeffs, const double latency, const double alpha, const double v_ref) {
     this->coeffs = coeffs;
     this->latency = latency;
     this->alpha = alpha;
+    this->v_ref = v_ref;
   }
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
@@ -78,9 +80,9 @@ class FG_eval {
       auto epsi = vars[epsi_start + t];
 
       // The part of the cost based on the reference state.
-      fg[0] += 0.002 * (CppAD::exp(CppAD::abs(cte) * 2 - 0.5) + CppAD::pow(cte, 2));
+      fg[0] += CppAD::pow(cte, 2);
       fg[0] += CppAD::pow(epsi, 2);
-      // fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
+      fg[0] += 0.2 * CppAD::pow(v - ref_v, 2);
 
       if (t + 1 < N) {
         auto delta = vars[delta_start + t];
@@ -94,10 +96,10 @@ class FG_eval {
           auto delta_next = vars[delta_start + t + 1];
           auto a_next = vars[a_start + t + 1];
 
-          // Minimize the velocity in the curve.
-          auto r = Lf / (CppAD::abs(delta_next) + 0.000001);
-          auto v_max = CppAD::sqrt(this->alpha * r);
-          fg[0] += 0.003 * CppAD::exp(v - v_max);
+          // // Minimize the velocity in the curve.
+          // auto r = Lf / (CppAD::abs(delta_next) + 0.000001);
+          // auto v_max = CppAD::sqrt(this->alpha * r);
+          // fg[0] += 0.003 * CppAD::exp(v - v_max);
 
           // Minimize the value gap between sequential actuations.
           fg[0] += 200 * CppAD::pow(delta - delta_next, 2);
@@ -183,7 +185,7 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs, const double latency, const double alpha) {
+vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &coeffs, const double latency, const double alpha, const double v_ref) {
   bool ok = true;
   size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
@@ -277,7 +279,7 @@ vector<double> MPC::Solve(const Eigen::VectorXd &state, const Eigen::VectorXd &c
   constraints_upperbound[epsi_start] = epsi;
 
   // object that computes objective and constraints
-  FG_eval fg_eval(coeffs, latency, alpha);
+  FG_eval fg_eval(coeffs, latency, alpha, v_ref);
 
   //
   // NOTE: You don't have to worry about these options
